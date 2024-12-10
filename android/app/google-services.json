@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1050438389726",
+    "project_id": "voip-40183",
+    "storage_bucket": "voip-40183.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1050438389726:android:121a83d610f93e8536174f",
+        "android_client_info": {
+          "package_name": "com.voipnotif"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9R_yD1wG0Islh2AHRxaLIixSzaxxdVM0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
