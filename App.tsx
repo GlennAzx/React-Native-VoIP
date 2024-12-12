@@ -7,7 +7,7 @@
 import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import messaging from '@react-native-firebase/messaging';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, Alert } from 'react-native';
 import {
   SafeAreaView,
   ScrollView,
@@ -58,7 +58,16 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 
 async function requestUserPermission() {
 
-  PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    {
+      title: "VoIP Notification Permission",
+      message: "VoIP needs to send you notifications for incoming calls",
+      buttonNeutral: "Ask Me Later",
+      buttonNegative: "Cancel",
+      buttonPositive: "OK"
+    }
+  );
   
   const authStatus = await messaging().requestPermission();
   const enabled =
@@ -88,6 +97,38 @@ function App(): React.JSX.Element {
     console.log('App mounted');
     requestUserPermission();
     getToken();
+
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      if (remoteMessage.data?.type === 'voip') {
+        Alert.alert(
+          'Incoming Call',
+          `${remoteMessage.data.caller_name || 'Unknown Caller'}\nCall ID: ${remoteMessage.data.call_id}`,
+          [
+            {
+              text: '📞 Answer',
+              onPress: () => {
+                console.log('Call answered:', remoteMessage.data.call_id);
+                // Handle call accept logic
+              },
+              style: 'default',
+            },
+            {
+              text: '❌ Decline',
+              onPress: () => {
+                console.log('Call declined:', remoteMessage.data.call_id);
+                // Handle call rejection logic
+              },
+              style: 'destructive',
+            },
+          ],
+          {
+            cancelable: false,
+          },
+        );
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   return (

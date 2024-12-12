@@ -1,6 +1,12 @@
 package com.voipnotif
 
+import android.os.Bundle
 import android.Manifest
+import android.content.Intent
+import android.content.Context
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,7 +16,13 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 
+
 class MainActivity : ReactActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        askNotificationPermission()
+        requestBatteryOptimizationExemption()
+    }
 
   // [START ask_post_notifications]
     // Declare the launcher at the top of your Activity/Fragment:
@@ -21,6 +33,19 @@ class MainActivity : ReactActivity() {
             // FCM SDK (and your app) can post notifications.
         } else {
             // TODO: Inform user that that your app will not show notifications.
+        }
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val packageName = packageName
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
         }
     }
 
@@ -43,6 +68,7 @@ class MainActivity : ReactActivity() {
         }
     }
     // [END ask_post_notifications]
+    
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
