@@ -20,8 +20,13 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkAndRequestPermissions()
         askNotificationPermission()
         requestBatteryOptimizationExemption()
+
+        val intent = Intent()
+        intent.action = android.telecom.TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
+        startActivity(intent)
     }
 
   // [START ask_post_notifications]
@@ -68,6 +73,20 @@ class MainActivity : ReactActivity() {
         }
     }
     // [END ask_post_notifications]
+    private fun checkAndRequestPermissions() {
+        val permissions = arrayOf(
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_PHONE_STATE
+        )
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.plus(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        
+        requestPermissions(permissions, 1)
+    }
+    
     
 
   /**
