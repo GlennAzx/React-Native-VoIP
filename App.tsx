@@ -275,14 +275,18 @@ const App = (): React.JSX.Element => {
     });
 
     const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-      console.log('FCM Message Received:', remoteMessage);
-
-      if (remoteMessage.data?.type === 'voip') {
-        handleIncomingCall(remoteMessage);
-      } else {
-        console.warn('Unhandled FCM message type:', remoteMessage.data?.type);
-      }
+        console.log('FCM Message Full Payload:', JSON.stringify(remoteMessage, null, 2));
+        console.log('FCM Message Type:', remoteMessage.data?.type);
+        console.log('FCM Message Data:', remoteMessage.data);
+    
+        if (remoteMessage.data?.type === 'voip') {
+            console.log('Handling VoIP call with data:', remoteMessage.data);
+            handleIncomingCall(remoteMessage);
+        } else {
+            console.log('Unhandled message type:', remoteMessage.data?.type);
+        }
     });
+  
 
     return () => {
       RNCallKeep.removeEventListener('answerCall');
