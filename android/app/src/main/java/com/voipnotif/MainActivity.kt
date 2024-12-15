@@ -15,14 +15,18 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import android.util.Log
+
 
 
 class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MainActivity", "Launching phone accounts settings")
         checkAndRequestPermissions()
         askNotificationPermission()
         requestBatteryOptimizationExemption()
+
 
         val intent = Intent()
         intent.action = android.telecom.TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS

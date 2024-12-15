@@ -70,8 +70,11 @@ class CallKeep {
 
   private setupEventListeners = () => {
     RNCallKeep.addEventListener('endCall', this.endCall);
-    RNCallKeep.addEventListener('answerCall', this.answerCall);
-  };
+    RNCallKeep.addEventListener('answerCall', (data) => {
+        console.log('Call answered:', data);
+        RNCallKeep.setCurrentCallActive(data.callUUID);
+    });
+};
 
   private removeEventListeners = () => {
     RNCallKeep.removeEventListener('endCall');
@@ -124,6 +127,7 @@ const checkPermissions = async () => {
     const permissions = [
       PermissionsAndroid.PERMISSIONS.CALL_PHONE,
       PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE,
     ];
 
     if (Number(Platform.Version) >= 33) {
@@ -132,6 +136,14 @@ const checkPermissions = async () => {
 
     const results = await PermissionsAndroid.requestMultiple(permissions);
     console.log('Permissions granted:', results);
+
+    console.log('Permissions granted:', results);
+
+    // Using Object.entries to iterate over permission results
+    Object.entries(results).forEach(([permission, status]) => {
+      console.log(`Permission ${permission}: ${status}`);
+    });
+  
 
     if ((Number(Platform.Version) >= 33) && results[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] === 'never_ask_again') {
       handlePermissionNeverAskAgain();
@@ -233,12 +245,34 @@ const App = (): React.JSX.Element => {
 
   useEffect(() => {
     const initializeApp = async () => {
+      await checkPermissions();
       await requestUserPermission();
       await getToken();
       await setupCallKeep();
     };
 
     initializeApp();
+
+    // Event Listeners for CallKeep
+    RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
+      console.log('Call answered:', callUUID);
+      RNCallKeep.setCurrentCallActive(callUUID);
+    });
+
+    RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
+      console.log('Call ended:', callUUID);
+      RNCallKeep.endCall(callUUID);
+    });
+
+    RNCallKeep.addEventListener('didPerformSetMutedCallAction', ({ muted, callUUID }) => {
+      console.log('Call muted:', callUUID, muted);
+      RNCallKeep.setMutedCall(callUUID, muted);
+    });
+
+    RNCallKeep.addEventListener('didToggleHoldCallAction', ({ hold, callUUID }) => {
+      console.log('Call hold:', callUUID, hold);
+      RNCallKeep.setOnHold(callUUID, hold);
+    });
 
     const unsubscribe = messaging().onMessage(async (remoteMessage) => {
       console.log('FCM Message Received:', remoteMessage);
@@ -250,7 +284,13 @@ const App = (): React.JSX.Element => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      RNCallKeep.removeEventListener('answerCall');
+      RNCallKeep.removeEventListener('endCall');
+      RNCallKeep.removeEventListener('didPerformSetMutedCallAction');
+      RNCallKeep.removeEventListener('didToggleHoldCallAction');
+      unsubscribe();
+    };
   }, []);
 
   const simulateIncomingCall = async () => {
@@ -259,6 +299,8 @@ const App = (): React.JSX.Element => {
     const handle = '+1234567890';
   
     try {
+
+      console.log('Available RNCallKeep methods:', Object.keys(RNCallKeep));
       const hasAccount = await RNCallKeep.checkPhoneAccountEnabled();
       if (!hasAccount) {
         Alert.alert('Phone Account Required', 'Please enable the phone account in system settings');
@@ -266,7 +308,17 @@ const App = (): React.JSX.Element => {
       }
   
       console.log('Simulating incoming call...');
+
+      // Direct service test
+      //RNCallKeep.testServiceConnection(uuid, handle, callerName);
+
       RNCallKeep.displayIncomingCall(uuid, handle, callerName, 'generic', true);
+
+      // Check if call enters managed state
+      const isManaged = await RNCallKeep.checkIsInManagedCall();
+      console.log('Is call in managed state:', isManaged);
+
+      
     } catch (error) {
       console.error('Error simulating incoming call:', error);
       Alert.alert('Error', 'Failed to simulate incoming call. Check logs.');
