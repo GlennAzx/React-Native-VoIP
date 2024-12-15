@@ -16,6 +16,8 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import android.util.Log
+import android.telecom.TelecomManager
+import android.content.ComponentName
 
 
 
@@ -26,11 +28,6 @@ class MainActivity : ReactActivity() {
         checkAndRequestPermissions()
         askNotificationPermission()
         requestBatteryOptimizationExemption()
-
-
-        val intent = Intent()
-        intent.action = android.telecom.TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
-        startActivity(intent)
     }
 
   // [START ask_post_notifications]

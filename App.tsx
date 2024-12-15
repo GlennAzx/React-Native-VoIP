@@ -5,7 +5,7 @@
 
 import React, { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
-import { PermissionsAndroid, Platform, Alert, Linking, Button } from 'react-native';
+import { PermissionsAndroid, Platform, Alert, Linking, Button, NativeModules, } from 'react-native';
 import RNCallKeep from 'react-native-callkeep';
 import {
   SafeAreaView,
@@ -39,7 +39,7 @@ class CallKeep {
     this.isAudioCall = isAudioCall;
 
     CallKeep.instance = this;
-    this.setupEventListeners();
+    //this.setupEventListeners();
   }
 
   static getInstance(): CallKeep {
@@ -68,13 +68,7 @@ class CallKeep {
     // Navigate to in-call screen if needed
   };
 
-  private setupEventListeners = () => {
-    RNCallKeep.addEventListener('endCall', this.endCall);
-    RNCallKeep.addEventListener('answerCall', (data) => {
-        console.log('Call answered:', data);
-        RNCallKeep.setCurrentCallActive(data.callUUID);
-    });
-};
+  
 
   private removeEventListeners = () => {
     RNCallKeep.removeEventListener('endCall');
@@ -257,6 +251,8 @@ const App = (): React.JSX.Element => {
     RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
       console.log('Call answered:', callUUID);
       RNCallKeep.setCurrentCallActive(callUUID);
+
+      
     });
 
     RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
