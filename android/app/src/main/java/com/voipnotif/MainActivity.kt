@@ -17,17 +17,53 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import android.util.Log
 import android.telecom.TelecomManager
+import android.telecom.PhoneAccountHandle
 import android.content.ComponentName
-
-
+import io.wazo.callkeep.VoiceConnectionService
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.bridge.ReactContext
+import android.app.AlertDialog
 
 class MainActivity : ReactActivity() {
+    private var isActivityReady = false
+
+    override fun onResume() {
+        super.onResume()
+        isActivityReady = true
+        Log.d("[MainActivity]", "Activity resumed")
+        try {
+            val reactInstanceManager = reactNativeHost?.reactInstanceManager
+            if (reactInstanceManager != null) {
+                val reactContext = reactInstanceManager.currentReactContext as ReactContext?
+                reactContext?.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                    ?.emit("ActivityReady", null)
+                    Log.d("[MainActivity]", "ActivityReady event emitted")
+            }
+        } catch (e: Exception) {
+            Log.e("[MainActivity]", "Error emitting ActivityReady event: ${e.message}")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isActivityReady = false
+        Log.d("[MainActivity]", "Activity paused")
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d("MainActivity", "Launching phone accounts settings")
-        checkAndRequestPermissions()
-        askNotificationPermission()
-        requestBatteryOptimizationExemption()
+        try {
+            super.onCreate(savedInstanceState)
+            Log.d("[MainActivity]", "Starting permission checks")
+
+            checkAndRequestPermissions()
+            askNotificationPermission()
+            requestBatteryOptimizationExemption()
+
+            
+
+            Log.d("[MainActivity]", "Permissions handled successfully")
+        } catch (e: Exception) {
+            Log.e("[MainActivity]", "Error during initialization: ${e.message}")
+        }
     }
 
   // [START ask_post_notifications]

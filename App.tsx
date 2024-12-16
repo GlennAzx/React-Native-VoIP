@@ -5,7 +5,7 @@
 
 import React, { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
-import { PermissionsAndroid, Platform, Alert, Linking, Button, NativeModules, } from 'react-native';
+import { PermissionsAndroid, Platform, Alert, Linking, Button, NativeModules, DeviceEventEmitter } from 'react-native';
 import RNCallKeep from 'react-native-callkeep';
 import {
   SafeAreaView,
@@ -213,6 +213,13 @@ const setupCallKeep = async () => {
     }
 
     await RNCallKeep.setup(options);
+
+    const hasAccount = await RNCallKeep.checkPhoneAccountEnabled();
+    
+    if (!hasAccount) {
+      console.log('Phone account registered successfully.');
+    }
+
     RNCallKeep.setAvailable(true);
     console.log('RNCallKeep initialized successfully.');
   } catch (error) {
@@ -238,11 +245,19 @@ const App = (): React.JSX.Element => {
   };
 
   useEffect(() => {
+
+    
+
     const initializeApp = async () => {
-      await checkPermissions();
-      await requestUserPermission();
+      //await checkPermissions();
+      //await requestUserPermission();
       await getToken();
       await setupCallKeep();
+
+      return () => {
+        console.log('Cleaning up ActivityReady listener');
+        
+      };
     };
 
     initializeApp();
@@ -251,8 +266,7 @@ const App = (): React.JSX.Element => {
     RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
       console.log('Call answered:', callUUID);
       RNCallKeep.setCurrentCallActive(callUUID);
-
-      
+   
     });
 
     RNCallKeep.addEventListener('endCall', ({ callUUID }) => {

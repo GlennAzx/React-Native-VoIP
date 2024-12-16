@@ -23,17 +23,12 @@ RNCallKeep.setup({
 
 RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
     console.log('Call answered:', callUUID);
-    RNCallKeep.backToForeground();
+    console.log('Was device locked when received:', wasDeviceLockedOnReceive);
     
-    let hasActivated = false;
-    const appStateListener = AppState.addEventListener('change', (nextAppState) => {
-        if (nextAppState === 'active' && !hasActivated) {
-            hasActivated = true;
-            RNCallKeep.setCurrentCallActive(callUUID);
-            appStateListener.remove();
-        }
-    });
+    RNCallKeep.setCurrentCallActive(callUUID);
+    
 });
+
 
 
 RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
@@ -41,8 +36,12 @@ RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
     RNCallKeep.endCall(callUUID);
 });
 
+let wasDeviceLockedOnReceive = false;
+
 messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.log('Background message received:', remoteMessage);
+    wasDeviceLockedOnReceive = remoteMessage.from === 'background';
+
     try {
         const { data } = remoteMessage;
         if ('voip' === data?.type) {
