@@ -7,7 +7,9 @@ import App from './App';
 import {name as appName} from './app.json';
 import messaging from '@react-native-firebase/messaging';
 import RNCallKeep from 'react-native-callkeep';
-import { AppState } from 'react-native';
+import { AppState, DeviceEventEmitter } from 'react-native';
+import IncomingCall from 'react-native-incoming-call';
+
 
 RNCallKeep.setup({
     ios: {
@@ -23,9 +25,8 @@ RNCallKeep.setup({
 
 RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
     console.log('Call answered:', callUUID);
-    console.log('Was device locked when received:', wasDeviceLockedOnReceive);
-    
-    RNCallKeep.setCurrentCallActive(callUUID);
+    //RNCallKeep.setCurrentCallActive(callUUID);
+    RNCallKeep.endCall(callUUID);
     
 });
 
@@ -36,23 +37,46 @@ RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
     RNCallKeep.endCall(callUUID);
 });
 
-let wasDeviceLockedOnReceive = false;
+
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.log('Background message received:', remoteMessage);
-    wasDeviceLockedOnReceive = remoteMessage.from === 'background';
+    
 
     try {
         const { data } = remoteMessage;
+
         if ('voip' === data?.type) {
-            // Match the payload structure from your FCM message
             const callId = data.call_id || data.uuid;
             const handle = data.handle;
             const callerName = data.caller_name || data.callerName;
-            
+            IncomingCall.display(
+                callId,
+                callerName,
+                null,
+                'Incoming Call',
+                20000
+            );
+
             console.log('Displaying incoming call:', { callId, handle, callerName });
-            RNCallKeep.displayIncomingCall(callId, handle, callerName, 'generic', true);
+        } else if (remoteMessage?.notification?.title === 'Missed Call') {
+            IncomingCall.dismiss();
         }
+
+        const endCallListener = DeviceEventEmitter.addListener("endCall", ( payload => {
+            //End call action here
+        }));
+        const answerCallListener  = DeviceEventEmitter.addListener("answerCall", (payload) => {
+            console.log('answerCall', payload);
+            if (payload.isHeadless){
+                //Called from killed state
+                console.log('Headless mode');
+                IncomingCall.openAppFromHeadlessMode(payload.uuid);
+            } else{
+                IncomingCall.backToForeground();
+            }
+        });
+
     } catch (error) {
         console.log('Background handler error:', error);
     }

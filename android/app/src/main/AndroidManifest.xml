@@ -1,7 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
@@ -25,6 +29,7 @@
 
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
 
 
@@ -57,6 +62,7 @@
           android:name="io.wazo.callkeep.RNCallKeepBackgroundMessagingService"
           android:exported="true" />
 
+      <activity android:name="com.incomingcall.UnlockScreenActivity" />
 
       <activity
         android:name=".MainActivity"

@@ -77,3 +77,110 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+
+
+TO BE NOTED : 
+
+USE OF react-native-incoming-call and rn-android-overlay-permission Required Manual Updating of their build.gradle files shown below :
+
+### react-native-incoming-call build.gradle:
+
+```bash
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2' // Update to a compatible version
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 33 // Update to the latest stable version
+
+    defaultConfig {
+        minSdkVersion 21 // Update to a reasonable minimum version
+        targetSdkVersion 33 // Match the compileSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    mavenCentral()
+    google()
+    maven {
+        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+        url("$rootDir/../node_modules/react-native/android")
+    }
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native:+' // From node_modules
+    implementation 'com.squareup.picasso:picasso:2.71828'
+}
+
+```
+
+### rn-android-overlay-permission build.gradle:
+
+```bash
+buildscript {
+    repositories {
+        google() // Add Google repository
+        mavenCentral() // Use Maven Central instead of JCenter
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.2' // Update to a more recent version
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 33 // Update to the latest stable version
+    buildToolsVersion "33.0.0" // Update to the latest stable version
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 33 // Match the compileSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+    lintOptions {
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    mavenCentral()
+    google() // Ensure Google repository is included
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native:+' // Use implementation instead of compile
+}
+```
+
+

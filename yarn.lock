@@ -2040,7 +2040,7 @@
 
 "@react-native-firebase/app@^21.6.1":
   version "21.6.1"
-  resolved "https://registry.npmjs.org/@react-native-firebase/app/-/app-21.6.1.tgz"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/app/-/app-21.6.1.tgz#2f3a5f9bc9436ba3a0a76b9d32eb685e0a379340"
   integrity sha512-o1i3aQMtJeofue+73j/8KO2l+/bRHaSHqOl7FtIeZfajQZaulaROugD2Rr2Mlc1o7LfEUyoDOoij9nGdrydEyw==
   dependencies:
     firebase "10.13.2"
@@ -6090,6 +6090,11 @@ react-native-callkeep@^4.3.16:
   resolved "https://registry.yarnpkg.com/react-native-callkeep/-/react-native-callkeep-4.3.16.tgz#56291796984b896113ef00f8b67ae3fe177baf70"
   integrity sha512-aIxn02T5zW4jNPyzRdFGTWv6xD3Vy/1AkBMB6iYvWZEHWnfmgNGF0hELqg03Vbc2BNUhfqpu17aIydos+5Hurg==
 
+react-native-incoming-call@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/react-native-incoming-call/-/react-native-incoming-call-2.0.3.tgz#c786a2868498477b8e8027729cb72a9813c0d2a2"
+  integrity sha512-G1HyoQcXwqQQQPdenOyJkcN4D9jbHosRKaQPfdG/6oIrkHThy3iWywIJHCCyqKvJwhF0Qz1WhEMFckzH1kvGhw==
+
 react-native-voip-push-notification@^3.3.2:
   version "3.3.2"
   resolved "https://registry.npmjs.org/react-native-voip-push-notification/-/react-native-voip-push-notification-3.3.2.tgz"
@@ -6362,6 +6367,11 @@ rimraf@~2.6.2:
   integrity sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==
   dependencies:
     glob "^7.1.3"
+
+rn-android-overlay-permission@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/rn-android-overlay-permission/-/rn-android-overlay-permission-1.0.5.tgz#d93e189245b610f1488fbb79fb3a12312f3f098c"
+  integrity sha512-hTwAd9Yhem4OCLCT1wVZAWLkiJm3y7hqWkbNiaq8MWJMoR05C2T+P/m12pEQ1bbI2SME1LVlyKbbV1V+iABtxg==
 
 run-parallel@^1.1.9:
   version "1.2.0"
