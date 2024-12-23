@@ -7,5 +7,5 @@ includeBuild('../node_modules/@react-native/gradle-plugin')
 include ':react-native-callkeep'
 project(':react-native-callkeep').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-callkeep/android')
 
-include ':rn-android-overlay-permission'
-project(':rn-android-overlay-permission').projectDir = new File(rootProject.projectDir, '../node_modules/rn-android-overlay-permission/android')
+//include ':rn-android-overlay-permission'
+//project(':rn-android-overlay-permission').projectDir = new File(rootProject.projectDir, '../node_modules/rn-android-overlay-permission/android')

@@ -185,29 +185,6 @@ const checkPermissions = async () => {
     
 };
 
-const requestUserPermission = async () => {
-  const granted = await checkPermissions();
-  if (!granted) {
-    console.warn('Required permissions not granted');
-    return;
-  }
-
-  try {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-      console.log('Notification permission granted:', authStatus);
-    } else {
-      console.warn('Notification permission not granted.');
-    }
-  } catch (error) {
-    console.error('Error requesting user permission:', error);
-  }
-};
-
 const setupCallKeep = async () => {
   // Add delay to ensure activity is ready
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -244,30 +221,6 @@ const getToken = async () => {
   }
 };
 
-
-const OverlayInit = async () => {
-  OverlayPermissionModule.isRequestOverlayPermissionGranted((status: any) => {
-    if (status) {
-      Alert.alert(
-        "Permissions",
-        "Overlay Permission",
-        [
-          {
-            text: "Cancel",
-            onPress: () => console.log("Cancel Pressed"),
-            style: "cancel",
-          },
-          {
-            text: "OK",
-            onPress: () => OverlayPermissionModule.requestOverlayPermission(),
-          },
-        ],
-        { cancelable: false }
-      );
-    }
-  });
-};
-
 const App = (): React.JSX.Element => {
   const isDarkMode = useColorScheme() === 'dark';
   const [activeCall, setActiveCall] = useState(null);
@@ -278,13 +231,16 @@ const App = (): React.JSX.Element => {
 
   useEffect(() => {
 
+    let endCallListener: any;
+    let answerCallListener: any;
+
   
     const initializeApp = async () => {
       //await checkPermissions();
       //await requestUserPermission();
       await getToken();
       await setupCallKeep();
-      await OverlayInit();
+      //await OverlayInit();
 
       return () => {
         console.log('Cleaning up ActivityReady listener');
@@ -344,10 +300,10 @@ const App = (): React.JSX.Element => {
               IncomingCall.dismiss();
           }
 
-          const endCallListener = DeviceEventEmitter.addListener("endCall", ( payload => {
+          endCallListener = DeviceEventEmitter.addListener("endCall", ( payload => {
               //End call action here
           }));
-          const answerCallListener  = DeviceEventEmitter.addListener("answerCall", (payload) => {
+          answerCallListener  = DeviceEventEmitter.addListener("answerCall", (payload) => {
               console.log('answerCall', payload);
               if (payload.isHeadless){
                   //Called from killed state
@@ -376,53 +332,8 @@ const App = (): React.JSX.Element => {
     };
   }, []);
 
-  const handleIncomingCall = (remoteMessage) => {
-    console.log('Handling Incoming Call:', remoteMessage.data);
   
-    const callUUID = remoteMessage.data?.call_id || 'default-uuid';
-    const callerName = remoteMessage.data?.caller_name || 'Unknown Caller';
-    const handle = remoteMessage.data?.handle || 'Unknown Number';
-  
-    try {
-      console.log('Calling RNCallKeep.displayIncomingCall with UUID:', callUUID, 'Name:', callerName, 'Handle:', handle);
-      setActiveCall(remoteMessage);
-    }
-    catch (error) {
-      console.error('Error in RNCallKeep.displayIncomingCall:', error);
-    }
-  };
 
-  const simulateIncomingCall = async () => {
-    const uuid = 'test-call-uuid-12345';
-    const callerName = 'Test User';
-    const handle = '+1234567890';
-  
-    try {
-
-      console.log('Available RNCallKeep methods:', Object.keys(RNCallKeep));
-      const hasAccount = await RNCallKeep.checkPhoneAccountEnabled();
-      if (!hasAccount) {
-        Alert.alert('Phone Account Required', 'Please enable the phone account in system settings');
-        return;
-      }
-  
-      console.log('Simulating incoming call...');
-
-      // Direct service test
-      //RNCallKeep.testServiceConnection(uuid, handle, callerName);
-
-      RNCallKeep.displayIncomingCall(uuid, handle, callerName, 'generic', true);
-
-      // Check if call enters managed state
-      const isManaged = await RNCallKeep.checkIsInManagedCall();
-      console.log('Is call in managed state:', isManaged);
-
-      
-    } catch (error) {
-      console.error('Error simulating incoming call:', error);
-      Alert.alert('Error', 'Failed to simulate incoming call. Check logs.');
-    }
-  };
         return (
           <SafeAreaView style={backgroundStyle}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -430,49 +341,66 @@ const App = (): React.JSX.Element => {
               <Header />
               <View style={{ backgroundColor: isDarkMode ? Colors.black : Colors.white }}>
                 <Text>Welcome to the CallKeep Integration App!</Text>
-                <Button title="Simulate Incoming Call" onPress={simulateIncomingCall} />
               </View>
             </ScrollView>
-
-            {activeCall && (
-              <Modal visible={true} animationType="slide" transparent={true}>
-                <View style={styles.callModal}>
-                  <View style={styles.callerInfo}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>
-                        {activeCall.callerName?.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={styles.callerName}>{activeCall.callerName}</Text>
-                    <Text style={styles.callerNumber}>{activeCall.handle}</Text>
-                  </View>
-            
-                  <View style={styles.actionButtons}>
-                    <TouchableOpacity 
-                      style={[styles.actionButton, styles.rejectCall]}
-                      onPress={() => {
-                        RNCallKeep.endCall(activeCall.uuid);
-                        setActiveCall(null);
-                      }}
-                    >
-                      <Text style={styles.buttonText}>Decline</Text>
-                    </TouchableOpacity>
-              
-                    <TouchableOpacity 
-                      style={[styles.actionButton, styles.acceptCall]}
-                      onPress={() => {
-                        RNCallKeep.answerIncomingCall(activeCall.uuid);
-                        // Handle call acceptance logic
-                      }}
-                    >
-                      <Text style={styles.buttonText}>Accept</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </Modal>
-            )}
           </SafeAreaView>
         );
       };
-
+const styles = StyleSheet.create({
+  callModal: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'space-between',
+    padding: 20,
+  },
+  callerInfo: {
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  callerName: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+  callerNumber: {
+    color: '#cccccc',
+    fontSize: 18,
+    marginTop: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 50,
+  },
+  actionButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  acceptCall: {
+    backgroundColor: '#2ecc71',
+  },
+  rejectCall: {
+    backgroundColor: '#e74c3c',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#555',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: 'white',
+    fontSize: 40,
+  },
+});
 export default App;

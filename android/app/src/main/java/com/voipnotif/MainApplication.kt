@@ -13,7 +13,7 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import io.wazo.callkeep.RNCallKeepPackage
 import com.incomingcall.IncomingCallPackage
-import com.overlaypermission.OverlayPermissionPackage;
+//import com.overlaypermission.OverlayPermissionPackage;
 
 class MainApplication : Application(), ReactApplication {
 

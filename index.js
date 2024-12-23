@@ -41,7 +41,7 @@ RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
     console.log('Background message received:', remoteMessage);
-    
+
 
     try {
         const { data } = remoteMessage;
@@ -50,6 +50,25 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
             const callId = data.call_id || data.uuid;
             const handle = data.handle;
             const callerName = data.caller_name || data.callerName;
+
+            RNCallKeep.backToForeground();
+            console.log('Back to foreground');
+
+            //Wait for appto be brough to foreground
+            const waitForForeground = new Promise((resolve) => {
+                const checkAppState = (state) => {
+                    if (state === 'active') {
+                        resolve();
+                    }
+                };
+
+                AppState.addEventListener('change', checkAppState);
+
+            });
+
+            await waitForForeground;
+
+
             IncomingCall.display(
                 callId,
                 callerName,
