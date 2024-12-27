@@ -81,6 +81,7 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
 
         // Show the notification
         if (notificationManager != null) {
+            notificationManager.cancel(NOTIFICATION_ID);
             notificationManager.notify(NOTIFICATION_ID, builder.build());
         }
 
