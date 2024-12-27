@@ -321,8 +321,7 @@ const App = (): React.JSX.Element => {
   
 
     return () => {
-      endCallListener.remove();
-      answerCallListener.remove();
+      
 
       RNCallKeep.removeEventListener('answerCall');
       RNCallKeep.removeEventListener('endCall');

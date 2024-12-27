@@ -13,6 +13,8 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import io.wazo.callkeep.RNCallKeepPackage
 import com.incomingcall.IncomingCallPackage
+import com.voipnotif.IntentLauncherPackage
+
 //import com.overlaypermission.OverlayPermissionPackage;
 
 class MainApplication : Application(), ReactApplication {
@@ -25,7 +27,8 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               //add(RNCallKeepPackage())
               //add(IncomingCallPackage())
-              
+              //add(ForegroundServicePackage())
+              add(IntentLauncherPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -36,15 +39,17 @@ class MainApplication : Application(), ReactApplication {
         override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
       }
 
-  override val reactHost: ReactHost
-    get() = getDefaultReactHost(applicationContext, reactNativeHost)
+      
 
-  override fun onCreate() {
-    super.onCreate()
-    SoLoader.init(this, OpenSourceMergedSoMapping)
-    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
-      load()
-    }
-  }
+      override val reactHost: ReactHost
+        get() = getDefaultReactHost(applicationContext, reactNativeHost)
+
+      override fun onCreate() {
+        super.onCreate()
+        SoLoader.init(this, OpenSourceMergedSoMapping)
+        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+          // If you opted-in for the New Architecture, we load the native entry point for this app.
+          load()
+        }
+      }
 }

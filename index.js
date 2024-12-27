@@ -2,7 +2,7 @@
  * @format
  */
 
-import {AppRegistry} from 'react-native';
+import {AppRegistry, NativeModules, Linking} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import messaging from '@react-native-firebase/messaging';
@@ -10,50 +10,46 @@ import RNCallKeep from 'react-native-callkeep';
 import { AppState, DeviceEventEmitter } from 'react-native';
 import IncomingCall from 'react-native-incoming-call';
 
+const { IntentLauncherModule } = NativeModules;
 
-RNCallKeep.setup({
-    ios: {
-        appName: 'YourAppName',
-    },
-    android: {
-        alertTitle: 'Permissions required',
-        alertDescription: 'This application needs to access your phone accounts',
-        cancelButton: 'Cancel',
-        okButton: 'Ok',
-    },
-});
+const headlessTask = async (remoteMessage) => {
 
-RNCallKeep.addEventListener('answerCall', ({ callUUID }) => {
-    console.log('Call answered:', callUUID);
-    //RNCallKeep.setCurrentCallActive(callUUID);
-    RNCallKeep.endCall(callUUID);
-    
-});
-
-
-
-RNCallKeep.addEventListener('endCall', ({ callUUID }) => {
-    console.log('Call ended:', callUUID);
-    RNCallKeep.endCall(callUUID);
-});
-
-
-
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-    console.log('Background message received:', remoteMessage);
-
+    console.log('Headless message received:', remoteMessage);
+    console.log('Available Native Modules:', NativeModules);
 
     try {
-        const { data } = remoteMessage;
+        //NativeModules.ForegroundService.startService("Title", "Message");
+        //ForegroundService.startService();
 
+        
+        RNCallKeep.setup({
+            ios: {
+                appName: 'YourAppName',
+            },
+            android: {
+                alertTitle: 'Permissions required',
+                alertDescription: 'This application needs to access your phone accounts',
+                cancelButton: 'Cancel',
+                okButton: 'Ok',
+            },
+        });
+
+        console.log('Waiting for app to enter foreground state...');
+
+
+        const { data } = remoteMessage;
+        
         if ('voip' === data?.type) {
             const callId = data.call_id || data.uuid;
-            const handle = data.handle;
             const callerName = data.caller_name || data.callerName;
 
-            RNCallKeep.backToForeground();
-            console.log('Back to foreground');
+            IntentLauncherModule.showIncomingCallNotification(
+                callerName      
+            );
 
+            RNCallKeep.backToForeground
+            console.log('Back to foreground');
+            
             //Wait for appto be brough to foreground
             const waitForForeground = new Promise((resolve) => {
                 const checkAppState = (state) => {
@@ -65,9 +61,11 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
                 AppState.addEventListener('change', checkAppState);
 
             });
+            
 
             await waitForForeground;
 
+            
 
             IncomingCall.display(
                 callId,
@@ -77,29 +75,24 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
                 20000
             );
 
-            console.log('Displaying incoming call:', { callId, handle, callerName });
+            const answerCallListener = DeviceEventEmitter.addListener("answerCall", (payload) => {
+                if (payload.isHeadless) {
+                    IncomingCall.openAppFromHeadlessMode(payload.uuid);
+                }
+            });
+
         } else if (remoteMessage?.notification?.title === 'Missed Call') {
             IncomingCall.dismiss();
         }
-
-        const endCallListener = DeviceEventEmitter.addListener("endCall", ( payload => {
-            //End call action here
-        }));
-        const answerCallListener  = DeviceEventEmitter.addListener("answerCall", (payload) => {
-            console.log('answerCall', payload);
-            if (payload.isHeadless){
-                //Called from killed state
-                console.log('Headless mode');
-                IncomingCall.openAppFromHeadlessMode(payload.uuid);
-            } else{
-                IncomingCall.backToForeground();
-            }
-        });
-
     } catch (error) {
-        console.log('Background handler error:', error);
+        console.log('Headless task error:', error);
     }
-});
+
+}
+
+
+messaging().setBackgroundMessageHandler(headlessTask);
+    
 
 AppRegistry.registerComponent(appName, () => App);
 
