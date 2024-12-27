@@ -43,11 +43,13 @@ const headlessTask = async (remoteMessage) => {
             const callId = data.call_id || data.uuid;
             const callerName = data.caller_name || data.callerName;
 
+            
             IntentLauncherModule.showIncomingCallNotification(
                 callerName      
             );
 
-            RNCallKeep.backToForeground
+            //RNCallKeep.backToForeground
+            
             console.log('Back to foreground');
             
             //Wait for appto be brough to foreground
@@ -67,14 +69,14 @@ const headlessTask = async (remoteMessage) => {
 
             
 
-            IncomingCall.display(
+            /*IncomingCall.display(
                 callId,
                 callerName,
                 null,
                 'Incoming Call',
                 20000
             );
-
+            */
             const answerCallListener = DeviceEventEmitter.addListener("answerCall", (payload) => {
                 if (payload.isHeadless) {
                     IncomingCall.openAppFromHeadlessMode(payload.uuid);
