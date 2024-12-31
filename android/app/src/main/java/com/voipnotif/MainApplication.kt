@@ -14,6 +14,7 @@ import com.facebook.soloader.SoLoader
 import io.wazo.callkeep.RNCallKeepPackage
 import com.incomingcall.IncomingCallPackage
 import com.voipnotif.IntentLauncherPackage
+import com.voipnotif.CallForegroundServicePackage
 
 //import com.overlaypermission.OverlayPermissionPackage;
 
@@ -27,7 +28,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               //add(RNCallKeepPackage())
               //add(IncomingCallPackage())
-              //add(ForegroundServicePackage())
+              add(CallForegroundServicePackage())
               add(IntentLauncherPackage())
             }
 

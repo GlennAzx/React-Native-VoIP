@@ -60,6 +60,15 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
             context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        // Start the foreground service to handle ringing and ensure process stays alive
+        Intent serviceIntent = new Intent(context, CallForegroundService.class);
+        serviceIntent.setAction(CallForegroundService.ACTION_START_RINGING);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent);
+        } else {
+            context.startService(serviceIntent);
+        }
+
         // Start the ringtone using RingtoneHandler
         RingtoneHandler.getInstance().startRingtone(context);
 
@@ -69,12 +78,13 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
             .setContentText("Call from: " + callerName)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setFullScreenIntent(fullScreenPendingIntent, true)
-            .addAction(android.R.drawable.sym_action_call, "Answer", answerPendingIntent)
-            .addAction(android.R.drawable.sym_action_call, "Decline", declinePendingIntent)
-            .setSound(null) // Disable default sound, use Ringtone for custom control
+            .setFullScreenIntent(fullScreenPendingIntent, true) // Ensure full-screen intent
+            .setSound(null) // Disable default sound, use custom ringtone control
+            .setOngoing(true)
             .setAutoCancel(false)
-            .setOngoing(true);
+            .addAction(android.R.drawable.sym_action_call, "Answer", answerPendingIntent)
+            .addAction(android.R.drawable.sym_action_call, "Decline", declinePendingIntent);
+
 
         NotificationManager notificationManager =
             (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

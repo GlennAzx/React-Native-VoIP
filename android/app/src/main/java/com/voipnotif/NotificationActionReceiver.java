@@ -9,6 +9,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import android.util.Log;
 import android.media.RingtoneManager;
+import android.app.KeyguardManager;
+
 
 
 public class NotificationActionReceiver extends BroadcastReceiver {
@@ -31,14 +33,31 @@ public class NotificationActionReceiver extends BroadcastReceiver {
         if ("ACTION_ANSWER_CALL".equals(action)) {
             Log.d(TAG, "Answer action clicked");
 
-            // Dismiss the notification and stop ringing
-            dismissNotification(notificationManager);
-            RingtoneHandler.getInstance().stopRingtone();
+            // Prompt unlock screen
+            KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+            if (keyguardManager != null && keyguardManager.isKeyguardLocked()) {
+                Intent unlockIntent = keyguardManager.createConfirmDeviceCredentialIntent(
+                    "Unlock Your Device", "Please unlock to answer the call."
+                );
+                unlockIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(unlockIntent);
+            }
 
             // Start the app's MainActivity
             Intent launchIntent = new Intent(context, MainActivity.class);
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             context.startActivity(launchIntent);
+
+            // Dismiss the notification and stop ringing
+            dismissNotification(notificationManager);
+            RingtoneHandler.getInstance().stopRingtone();
+
+            // Stop the foreground service
+            Intent serviceIntent = new Intent(context, CallForegroundService.class);
+            serviceIntent.setAction(CallForegroundService.ACTION_STOP_RINGING);
+            context.startService(serviceIntent);
+
+
 
             // Send event to React Native
             if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
@@ -54,6 +73,11 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
                 sendEventToJS(reactContext, "declineCall");
             }
+            // Stop the foreground service
+            Intent serviceIntent = new Intent(context, CallForegroundService.class);
+            serviceIntent.setAction(CallForegroundService.ACTION_STOP_RINGING);
+            context.startService(serviceIntent);
+
         }
     }
 
