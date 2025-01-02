@@ -20,6 +20,10 @@ import com.facebook.react.bridge.ReactMethod;
 import com.voipnotif.NotificationActionReceiver;
 import com.voipnotif.IncomingCallActivity;
 
+import android.app.KeyguardManager;
+import android.os.PowerManager;
+
+
 public class IntentLauncherModule extends ReactContextBaseJavaModule {
     private static final String CHANNEL_ID = "incoming_call_channel";
     public static final int NOTIFICATION_ID = 1;
@@ -38,6 +42,8 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
     public void showIncomingCallNotification(String callerName) {
         Context context = getReactApplicationContext();
         createNotificationChannel(context);
+
+        wakeAndUnlock();
 
         // Intent for Answer Action
         Intent answerIntent = new Intent(context, NotificationActionReceiver.class);
@@ -60,6 +66,7 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
             context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        /*
         // Start the foreground service to handle ringing and ensure process stays alive
         Intent serviceIntent = new Intent(context, CallForegroundService.class);
         serviceIntent.setAction(CallForegroundService.ACTION_START_RINGING);
@@ -68,10 +75,12 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
         } else {
             context.startService(serviceIntent);
         }
+        */
 
         // Start the ringtone using RingtoneHandler
         RingtoneHandler.getInstance().startRingtone(context);
 
+        // Normal notification builder when phone is unlocked 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.sym_call_incoming)
             .setContentTitle("Incoming Call")
@@ -102,6 +111,8 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
             }
             // Stop the ringtone using RingtoneHandler
             RingtoneHandler.getInstance().stopRingtone();
+
+            showMissedCallNotification(context, callerName);
         }, 20000); // 20 seconds
     }
 
@@ -120,4 +131,62 @@ public class IntentLauncherModule extends ReactContextBaseJavaModule {
             }
         }
     }
+
+    private void showMissedCallNotification(Context context, String callerName) {
+        // Use a different notification ID for the missed call
+        final int MISSED_CALL_NOTIFICATION_ID = 2;
+
+        NotificationManager notificationManager =
+            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null) return;
+
+        // (Optional) Build an intent to open your app if the user taps the missed call notification
+        Intent tapIntent = new Intent(context, MainActivity.class);
+        tapIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent tapPendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            tapIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        // Create the builder
+        NotificationCompat.Builder missedCallBuilder =
+            new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.sym_call_missed)
+                .setContentTitle("Missed Call")
+                .setContentText("You missed a call from: " + callerName)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setAutoCancel(true)      // allow user to swipe it away
+                .setOngoing(false);       // not a persistent notification
+
+        // Attach the PendingIntent if you want the user to open the app upon tapping
+        missedCallBuilder.setContentIntent(tapPendingIntent);
+
+        // Finally, show the missed call notification
+        notificationManager.notify(MISSED_CALL_NOTIFICATION_ID, missedCallBuilder.build());
+    }
+
+
+
+    private void wakeAndUnlock() {
+        PowerManager powerManager = (PowerManager) getReactApplicationContext().getSystemService(Context.POWER_SERVICE);
+        KeyguardManager keyguardManager = (KeyguardManager) getReactApplicationContext().getSystemService(Context.KEYGUARD_SERVICE);
+
+
+        if (powerManager != null && keyguardManager != null) {
+            PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK |
+                        PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                        PowerManager.ON_AFTER_RELEASE,
+                "MyApp::WakeLock"
+            );
+            wakeLock.acquire(3000); // Wake the device for 3 seconds
+
+            KeyguardManager.KeyguardLock keyguardLock = keyguardManager.newKeyguardLock("MyApp::KeyguardLock");
+            keyguardLock.disableKeyguard(); // Unlock the device
+        }
+    }
+
 }

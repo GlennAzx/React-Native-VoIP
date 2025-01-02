@@ -101,6 +101,12 @@
 
       </activity>
 
+      <activity
+        android:name="com.voipnotif.KeyguardCheckActivity"
+        android:exported="true" />
+
+
+
       <receiver android:name=".NotificationActionReceiver" android:exported="true" />
 
 

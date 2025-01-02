@@ -11,6 +11,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
+import android.app.NotificationManager;
 
 public class CallForegroundService extends Service {
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -34,6 +35,9 @@ public class CallForegroundService extends Service {
             return START_STICKY;
         }
 
+        NotificationManager notificationManager =
+            (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
         String action = intent.getAction();
         switch (action) {
             case ACTION_START_RINGING:
@@ -42,6 +46,7 @@ public class CallForegroundService extends Service {
             case ACTION_STOP_RINGING:
                 stopForeground(true);
                 stopSelf();
+                notificationManager.cancel(NOTIFICATION_ID);
                 break;
             default:
                 Log.w(TAG, "Unknown action: " + action);

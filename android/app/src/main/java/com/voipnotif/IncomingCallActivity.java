@@ -25,10 +25,10 @@ public class IncomingCallActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // Wake up the device and unlock the screen
-        wakeAndUnlock();
+        //wakeAndUnlock();
         finish();
 
-        /*
+        
         // Set up a basic layout for the activity
         TextView callerName = new TextView(this);
         callerName.setText("Incoming Call from Test User");
@@ -82,6 +82,7 @@ public class IncomingCallActivity extends Activity {
                 finish();
             }
         });
+        
 
         // Add components to layout
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
@@ -91,9 +92,10 @@ public class IncomingCallActivity extends Activity {
         layout.addView(declineButton);
 
         setContentView(layout);
-        */
+        
     }
 
+    /*
     private void wakeAndUnlock() {
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
@@ -111,6 +113,7 @@ public class IncomingCallActivity extends Activity {
             keyguardLock.disableKeyguard(); // Unlock the device
         }
     }
+    */
 
     private void dismissNotification() {
         NotificationManager notificationManager =

@@ -14,7 +14,7 @@ import android.app.KeyguardManager;
 
 
 public class NotificationActionReceiver extends BroadcastReceiver {
-    private static final String TAG = "NotificationActionReceiver";
+    private static final String TAG = "[NotificationActionReceiver]";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -35,28 +35,30 @@ public class NotificationActionReceiver extends BroadcastReceiver {
 
             // Prompt unlock screen
             KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-            if (keyguardManager != null && keyguardManager.isKeyguardLocked()) {
-                Intent unlockIntent = keyguardManager.createConfirmDeviceCredentialIntent(
-                    "Unlock Your Device", "Please unlock to answer the call."
-                );
-                unlockIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(unlockIntent);
-            }
-
-            // Start the app's MainActivity
-            Intent launchIntent = new Intent(context, MainActivity.class);
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            context.startActivity(launchIntent);
+            boolean locked = keyguardManager != null && keyguardManager.isKeyguardLocked();
+            
+            //KeyguardCheckActivity 
+            Intent checkIntent = new Intent(context, KeyguardCheckActivity.class);
+            checkIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(checkIntent);
 
             // Dismiss the notification and stop ringing
             dismissNotification(notificationManager);
             RingtoneHandler.getInstance().stopRingtone();
 
+            /* moved launch to KeyguardCheckActivity.java for handling after check
+            // Start the app's MainActivity
+            Intent launchIntent = new Intent(context, MainActivity.class);
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(launchIntent);
+            */
+            
+            /*
             // Stop the foreground service
             Intent serviceIntent = new Intent(context, CallForegroundService.class);
             serviceIntent.setAction(CallForegroundService.ACTION_STOP_RINGING);
             context.startService(serviceIntent);
-
+            */
 
 
             // Send event to React Native
