@@ -28,7 +28,7 @@ public class IncomingCallActivity extends Activity {
         wakeAndUnlock();
         finish();
 
-        /*
+        
         // Set up a basic layout for the activity
         TextView callerName = new TextView(this);
         callerName.setText("Incoming Call from Test User");
@@ -91,7 +91,7 @@ public class IncomingCallActivity extends Activity {
         layout.addView(declineButton);
 
         setContentView(layout);
-        */
+        
     }
 
     private void wakeAndUnlock() {
